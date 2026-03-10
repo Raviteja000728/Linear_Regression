@@ -1,8 +1,20 @@
 import streamlit as st
 import pandas as pd
-from sklearn.linear_model import LinearRegression
-from sklearn.metrics import r2_score, mean_squared_error
-from sklearn.model_selection import train_test_split
+
+# scikit-learn is required for the prediction logic. In hosted environments
+# such as Streamlit Cloud the package must be listed correctly in
+# requirements.txt ("scikit-learn", not "sci-kit learn" etc.). If the import
+# fails we show an error message and stop the app rather than crashing with a
+# traceback like the one seen in the screenshot.
+try:
+    from sklearn.linear_model import LinearRegression
+    from sklearn.metrics import r2_score, mean_squared_error
+    from sklearn.model_selection import train_test_split
+except ImportError:
+    st.error("The scikit-learn library is not available. "
+             "Make sure you have `scikit-learn` spelled correctly in your "
+             "requirements.txt and redeploy the app.")
+    st.stop()
 import pickle
 import os
 
@@ -38,6 +50,7 @@ if uploaded_file is not None:
     powerplay_score = st.slider("Powerplay Score", min_value=0, max_value=100, value=50)
     
     if st.button("Predict"):
+        # sklearn expects a 2‑D array for a single sample
         prediction = model.predict([[powerplay_wickets, powerplay_score]])
         st.write(f"Predicted Final Score: {prediction[0]:.2f}")
 else:
